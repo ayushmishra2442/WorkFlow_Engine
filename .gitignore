@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+
+# Build output
+bin/
+obj/
+
+# NuGet
+*.nupkg
+.nuget/
+
+# Logs (generated at runtime)
+logs/
+
+# Sensitive config — use environment variables or Azure Key Vault in production
+appsettings.Development.json
+
+# OS files
+.DS_Store
+Thumbs.db
