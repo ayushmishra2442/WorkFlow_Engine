@@ -140,6 +140,19 @@ builder.Services.AddScoped<
     IWorkflowStepService,
     WorkflowStepService>();
 
+// Workflow Engine (Instances & Tasks)
+builder.Services.AddScoped<
+    IWorkflowInstanceRepository,
+    WorkflowInstanceRepository>();
+
+builder.Services.AddScoped<
+    IWorkflowTaskRepository,
+    WorkflowTaskRepository>();
+
+builder.Services.AddScoped<
+    IWorkflowEngineService,
+    WorkflowEngineService>();
+
 // ============================================================
 // Build & Pipeline
 // ============================================================
