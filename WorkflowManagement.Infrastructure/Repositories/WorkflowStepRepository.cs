@@ -61,11 +61,18 @@ namespace WorkflowManagement.Infrastructure.Repositories
                                 "WorkflowId")),
 
                     RoleId =
-                        reader.GetGuid(
-                            reader.GetOrdinal("RoleId")),
+                        reader["RoleId"] == DBNull.Value
+                            ? null
+                            : reader.GetGuid(
+                                reader.GetOrdinal("RoleId")),
 
                     RoleName =
-                        reader["RoleName"].ToString()!,
+                        reader["RoleName"] == DBNull.Value
+                            ? string.Empty
+                            : reader["RoleName"].ToString()!,
+
+                    RoutingType =
+                        reader["RoutingType"].ToString()!,
 
                     StepName =
                         reader["StepName"].ToString()!,
@@ -130,11 +137,18 @@ namespace WorkflowManagement.Infrastructure.Repositories
                                 "WorkflowId")),
 
                     RoleId =
-                        reader.GetGuid(
-                            reader.GetOrdinal("RoleId")),
+                        reader["RoleId"] == DBNull.Value
+                            ? null
+                            : reader.GetGuid(
+                                reader.GetOrdinal("RoleId")),
 
                     RoleName =
-                        reader["RoleName"].ToString()!,
+                        reader["RoleName"] == DBNull.Value
+                            ? string.Empty
+                            : reader["RoleName"].ToString()!,
+
+                    RoutingType =
+                        reader["RoutingType"].ToString()!,
 
                     StepName =
                         reader["StepName"].ToString()!,
@@ -203,7 +217,11 @@ namespace WorkflowManagement.Infrastructure.Repositories
 
             command.Parameters.AddWithValue(
                 "@RoleId",
-                dto.RoleId);
+                (object?)dto.RoleId ?? DBNull.Value);
+
+            command.Parameters.AddWithValue(
+                "@RoutingType",
+                dto.RoutingType);
 
             command.Parameters.AddWithValue(
                 "@StepName",
@@ -244,7 +262,11 @@ namespace WorkflowManagement.Infrastructure.Repositories
 
             command.Parameters.AddWithValue(
                 "@RoleId",
-                dto.RoleId);
+                (object?)dto.RoleId ?? DBNull.Value);
+
+            command.Parameters.AddWithValue(
+                "@RoutingType",
+                dto.RoutingType);
 
             command.Parameters.AddWithValue(
                 "@StepName",

@@ -10,7 +10,14 @@ namespace WorkflowManagement.Application.Validators.WorkflowSteps
         {
             RuleFor(x => x.RoleId)
                 .NotEmpty()
-                .WithMessage("RoleId is required.");
+                .WithMessage("RoleId is required when RoutingType is 'Role'.")
+                .When(x => x.RoutingType == "Role");
+
+            RuleFor(x => x.RoutingType)
+                .NotEmpty()
+                .WithMessage("RoutingType is required.")
+                .Must(type => type == "Role" || type == "DirectManager")
+                .WithMessage("RoutingType must be either 'Role' or 'DirectManager'.");
 
             RuleFor(x => x.StepName)
                 .NotEmpty()

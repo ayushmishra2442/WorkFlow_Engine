@@ -9,8 +9,12 @@ namespace WorkflowManagement.Domain.Entities
         /// <summary>
         /// The role responsible for actioning this step.
         /// Actual user is resolved at runtime via WorkflowTask.
+        /// Optional if RoutingType is DirectManager.
         /// </summary>
-        public Guid RoleId { get; set; }
+        public Guid? RoleId { get; set; }
+
+        public string RoutingType { get; set; }
+            = "Role";
 
         public string StepName { get; set; }
             = string.Empty;

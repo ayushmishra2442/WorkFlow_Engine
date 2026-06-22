@@ -84,7 +84,13 @@ namespace WorkflowManagement.Infrastructure.Repositories
 
                     CreatedOn =
                         Convert.ToDateTime(
-                            reader["CreatedOn"])
+                            reader["CreatedOn"]),
+
+                    ManagerUserId =
+                        reader["ManagerUserId"] == DBNull.Value
+                            ? null
+                            : reader.GetGuid(
+                                reader.GetOrdinal("ManagerUserId"))
                 });
             }
 
@@ -163,6 +169,12 @@ namespace WorkflowManagement.Infrastructure.Repositories
                             ? null
                             : reader.GetGuid(
                                 reader.GetOrdinal("ModifiedBy")),
+
+                    ManagerUserId =
+                        reader["ManagerUserId"] == DBNull.Value
+                            ? null
+                            : reader.GetGuid(
+                                reader.GetOrdinal("ManagerUserId")),
 
                     DeleteFlag =
                         Convert.ToBoolean(
@@ -259,6 +271,10 @@ namespace WorkflowManagement.Infrastructure.Repositories
                 "@Email",
                 dto.Email);
 
+            command.Parameters.AddWithValue(
+                "@ManagerUserId",
+                (object?)dto.ManagerUserId ?? DBNull.Value);
+
             await connection.OpenAsync();
 
             await command.ExecuteNonQueryAsync();
@@ -294,6 +310,10 @@ namespace WorkflowManagement.Infrastructure.Repositories
             command.Parameters.AddWithValue(
                 "@IsActive",
                 dto.IsActive);
+
+            command.Parameters.AddWithValue(
+                "@ManagerUserId",
+                (object?)dto.ManagerUserId ?? DBNull.Value);
 
             await connection.OpenAsync();
 

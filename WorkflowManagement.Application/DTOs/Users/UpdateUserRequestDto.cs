@@ -16,5 +16,7 @@ namespace WorkflowManagement.Application.DTOs.Users
             = string.Empty;
 
         public bool IsActive { get; set; }
+
+        public Guid? ManagerUserId { get; set; }
     }
 }

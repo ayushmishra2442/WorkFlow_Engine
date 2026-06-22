@@ -54,6 +54,7 @@ namespace WorkflowManagement.Application.Services
                     WorkflowId = step.WorkflowId,
                     RoleId = step.RoleId,
                     RoleName = step.RoleName,
+                    RoutingType = step.RoutingType,
                     StepName = step.StepName,
                     StepOrder = step.StepOrder,
                     Description = step.Description,
@@ -89,6 +90,7 @@ namespace WorkflowManagement.Application.Services
                 WorkflowId = step.WorkflowId,
                 RoleId = step.RoleId,
                 RoleName = step.RoleName,
+                RoutingType = step.RoutingType,
                 StepName = step.StepName,
                 StepOrder = step.StepOrder,
                 Description = step.Description,
@@ -121,19 +123,26 @@ namespace WorkflowManagement.Application.Services
                     $"Workflow with ID '{dto.WorkflowId}' was not found.");
             }
 
-            // Business validation: Role must exist
-            var role =
-                await _roleRepository
-                    .GetRoleByIdAsync(dto.RoleId);
-
-            if (role == null)
+            // Business validation: Role must exist (if provided)
+            if (dto.RoleId.HasValue)
             {
-                _logger.LogWarning(
-                    "CreateWorkflowStep failed — Role {RoleId} not found",
-                    dto.RoleId);
+                var role =
+                    await _roleRepository
+                        .GetRoleByIdAsync(dto.RoleId.Value);
 
-                throw new KeyNotFoundException(
-                    $"Role with ID '{dto.RoleId}' was not found.");
+                if (role == null)
+                {
+                    _logger.LogWarning(
+                        "CreateWorkflowStep failed — Role {RoleId} not found",
+                        dto.RoleId);
+
+                    throw new KeyNotFoundException(
+                        $"Role with ID '{dto.RoleId}' was not found.");
+                }
+            }
+            else if (dto.RoutingType == "Role")
+            {
+                throw new ArgumentException("RoleId is required when RoutingType is 'Role'.");
             }
 
             await _workflowStepRepository
@@ -153,15 +162,22 @@ namespace WorkflowManagement.Application.Services
                 "Updating workflow step {WorkflowStepId}",
                 workflowStepId);
 
-            // Business validation: Role must exist
-            var role =
-                await _roleRepository
-                    .GetRoleByIdAsync(dto.RoleId);
-
-            if (role == null)
+            // Business validation: Role must exist (if provided)
+            if (dto.RoleId.HasValue)
             {
-                throw new KeyNotFoundException(
-                    $"Role with ID '{dto.RoleId}' was not found.");
+                var role =
+                    await _roleRepository
+                        .GetRoleByIdAsync(dto.RoleId.Value);
+
+                if (role == null)
+                {
+                    throw new KeyNotFoundException(
+                        $"Role with ID '{dto.RoleId}' was not found.");
+                }
+            }
+            else if (dto.RoutingType == "Role")
+            {
+                throw new ArgumentException("RoleId is required when RoutingType is 'Role'.");
             }
 
             await _workflowStepRepository

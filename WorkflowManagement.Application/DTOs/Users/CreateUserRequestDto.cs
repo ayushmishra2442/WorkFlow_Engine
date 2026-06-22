@@ -17,5 +17,7 @@ namespace WorkflowManagement.Application.DTOs.Users
         [MaxLength(320)]
         public string Email { get; set; }
             = string.Empty;
+
+        public Guid? ManagerUserId { get; set; }
     }
 }

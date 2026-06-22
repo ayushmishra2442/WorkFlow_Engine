@@ -28,6 +28,8 @@ namespace WorkflowManagement.Domain.Entities
 
         public Guid? ModifiedBy { get; set; }
 
+        public Guid? ManagerUserId { get; set; }
+
         public bool DeleteFlag { get; set; }
     }
 }

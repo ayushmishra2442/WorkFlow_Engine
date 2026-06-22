@@ -2,8 +2,14 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using System.Security.Claims;
 using Serilog;
 using WorkflowManagement.API.Middleware;
+using WorkflowManagement.API.Services;
 using WorkflowManagement.Application.Interfaces;
 using WorkflowManagement.Application.Services;
 using WorkflowManagement.Infrastructure.Repositories;
@@ -21,6 +27,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
 // Replace default logging with Serilog
 builder.Host.UseSerilog();
@@ -50,6 +57,23 @@ builder.Services.AddSwaggerGen(options =>
         Title = "Workflow Management API",
         Version = "v1"
     });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer", document),
+            new List<string>()
+        }
+    });
 });
 
 // ============================================================
@@ -67,6 +91,51 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials();
     });
+});
+
+// ============================================================
+// Security Services & Coral-Style Claims Transformation
+// ============================================================
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IClaimsTransformation, CustomClaimsTransformation>();
+
+// ============================================================
+// Authentication & JWT Bearer (Azure AD SSO)
+// ============================================================
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.Authority = builder.Configuration["SSOConfig:AuthorityUrl"];
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["SSOConfig:ValidIssuer"] ?? string.Empty,
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["SSOConfig:ValidAudiencesUrl"] ?? string.Empty,
+        ValidateLifetime = true
+    };
+    options.MetadataAddress = builder.Configuration["SSOConfig:MetadataAddress"] ?? string.Empty;
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var authorization = context.Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                var token = authorization.Substring("Bearer ".Length).Trim();
+                if (token.Contains("&"))
+                {
+                    context.Token = token.Split('&')[0];
+                }
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // ============================================================
@@ -177,9 +246,17 @@ app.UseCors("AllowAngular");
 // Custom global exception handler
 app.UseExceptionMiddleware();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Redirect root URL to /swagger
+app.MapGet("/", async context =>
+{
+    context.Response.Redirect("/swagger");
+    await Task.CompletedTask;
+});
 
 // Health check endpoint
 app.MapHealthChecks("/health", new HealthCheckOptions

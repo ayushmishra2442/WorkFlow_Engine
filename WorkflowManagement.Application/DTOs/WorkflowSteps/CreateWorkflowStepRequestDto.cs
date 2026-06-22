@@ -7,8 +7,9 @@ namespace WorkflowManagement.Application.DTOs.WorkflowSteps
         [Required]
         public Guid WorkflowId { get; set; }
 
-        [Required]
-        public Guid RoleId { get; set; }
+        public Guid? RoleId { get; set; }
+
+        public string RoutingType { get; set; } = "Role";
 
         [Required]
         [MaxLength(200)]

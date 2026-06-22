@@ -6,10 +6,11 @@ namespace WorkflowManagement.Application.DTOs.WorkflowSteps
 
         public Guid WorkflowId { get; set; }
 
-        public Guid RoleId { get; set; }
+        public Guid? RoleId { get; set; }
 
-        public string RoleName { get; set; }
-            = string.Empty;
+        public string? RoleName { get; set; }
+
+        public string RoutingType { get; set; } = "Role";
 
         public string StepName { get; set; }
             = string.Empty;

@@ -15,6 +15,37 @@ namespace WorkflowManagement.API.Controllers
             _userService = userService;
         }
 
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userIdClaim = User.FindFirst("db_user_id")?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return ApiError("Unauthorized", 401);
+            }
+
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiNotFound("User profile not found");
+            }
+
+            var roles = User.FindAll(System.Security.Claims.ClaimTypes.Role)
+                            .Select(c => c.Value)
+                            .ToList();
+
+            return ApiOk(new
+            {
+                user.UserId,
+                user.OrganizationId,
+                user.DisplayName,
+                user.Email,
+                user.IsActive,
+                user.CreatedOn,
+                Roles = roles
+            });
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult>
             GetUserById(Guid id)
