@@ -21,3 +21,4 @@ appsettings.Development.json
 # OS files
 .DS_Store
 Thumbs.db
+*.zip
